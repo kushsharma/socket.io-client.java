@@ -10,7 +10,7 @@ if (process.env.SSL) {
   server = require('http').createServer();
 }
 
-var io = require('socket.io')(server);
+var io = require('socket.io')(server, { pingInterval: 2000 });
 var port = process.env.PORT || 3000;
 var nsp = process.argv[2] || '/';
 var slice = Array.prototype.slice;
@@ -55,6 +55,17 @@ io.of(nsp).on('connection', function(socket) {
       var args = slice.call(arguments);
       socket.emit.apply(socket, ['ackBack'].concat(args));
     });
+  });
+
+  socket.on('callAckBinary', function() {
+    socket.emit('ack', function(buf) {
+      socket.emit('ackBack', buf);
+    });
+  });
+
+  socket.on('getAckBinary', function(data, callback) {
+    var buf = new Buffer('huehue', 'utf8');
+    callback(buf);
   });
 
   socket.on('getAckDate', function(data, callback) {
